@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -33,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private DatabaseReference databaseReference;
 
+    private ProgressDialog mDialog;
+
     private EditText courseTitleET, courseCodeET, courseCreditET;
     private Button addBtn;
 
@@ -47,16 +50,26 @@ public class MainActivity extends AppCompatActivity {
 
         init();
 
-        // userId = firebaseAuth.getCurrentUser().getUid();
 
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                mDialog.setMessage("Please waiting...");
+                mDialog.show();
+
                 String title = courseTitleET.getText().toString();
                 String code = courseCodeET.getText().toString();
-               // int credit = Integer.valueOf(courseCreditET.getText().toString());
                 int credit = Integer.parseInt(courseCreditET.getText().toString());
-                saveCourse(title, code, credit);
+
+                if(title==null&& code==null&&credit==0){
+                    Toast.makeText(MainActivity.this, "Please fill field!!", Toast.LENGTH_SHORT).show();
+                    mDialog.dismiss();
+
+                }else {
+                    saveCourse(title, code, credit);
+                    mDialog.dismiss();
+                }
             }
         });
 
@@ -65,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void getCourses() {
         DatabaseReference coursesRef = databaseReference.child("users").child("courses");
-
         coursesRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -101,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
+        mDialog = new ProgressDialog(MainActivity.this);
         courseTitleET = findViewById(R.id.courseTitleET);
         courseCodeET = findViewById(R.id.courseCodeET);
         courseCreditET = findViewById(R.id.courseCreditET);
